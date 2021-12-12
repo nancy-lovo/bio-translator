@@ -16,11 +16,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
+    const exceptionsResponse = exception.getResponse() as any;
+    const errorMessage = this.parseErrorMessage(exceptionsResponse.message);
 
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
+      error: errorMessage,
     });
+  }
+
+  // handle dto-related errors
+  parseErrorMessage(message: string | string[]) {
+    let errorMessage = message;
+
+    if (typeof errorMessage === 'object' && Array.isArray(errorMessage)) {
+      errorMessage = errorMessage.join(', ');
+    }
+    return errorMessage;
   }
 }
